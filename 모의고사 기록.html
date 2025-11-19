@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>모의고사 점수 기록</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Noto Sans KR", system-ui, sans-serif;
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+    h1 { font-size: 20px; text-align: center; margin: 0 0 8px; }
+    .table-wrapper { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 800px; font-size: 13px; }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 4px 6px;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .th-main { background: #f7f7f7; font-weight: 600; }
+    .th-sub { background: #f7f7f7; font-weight: 500; }
+    .row-header { background: #fafafa; width: 42px; font-weight: 500; }
+
+    .score-input {
+      width: 100%; border: none; background: transparent;
+      text-align: center; font-size: 13px; padding: 3px 0;
+    }
+
+    .score-input:focus {
+      outline: 1px solid #888;
+      background: #fffff3;
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none; margin: 0;
+    }
+    input[type="number"] { -moz-appearance: textfield; }
+
+    .level-high { background: #d0f0c0; }
+    .level-mid { background: #dce8ff; }
+    .level-low { background: #ffd6d6; }
+    .status-pass { background: #d0f0c0; font-weight: 600; }
+    .status-fail { background: #ffd6d6; font-weight: 600; }
+    .total-cell { font-weight: 600; }
+
+    .chart-wrapper { margin-top: 28px; }
+    #scoreChart {
+      width: 100%; height: 260px; background: #fafafa;
+      border: 1px solid #eee; border-radius: 12px;
+    }
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 8px;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.btn-small {
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #fafafa;
+  cursor: pointer;
+  font-size: 11px;
+}
+
+.btn-small:hover {
+  background: #f0f0f0;
+}
+
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>모의고사 점수 기록</h1>
+
+<div class="toolbar">
+    <button type="button" class="btn-small" id="resetAll">
+      기록 초기화
+    </button>
+  </div>
+
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2" class="th-main">회차</th>
+          <th colspan="2" class="th-main">1교시</th>
+          <th colspan="3" class="th-main">2교시</th>
+          <th colspan="3" class="th-main">3교시</th>
+          <th rowspan="2" class="th-main">총점 (295)</th>
+          <th rowspan="2" class="th-main">합/불</th>
+        </tr>
+        <tr>
+          <th class="th-sub">성인(70)</th>
+          <th class="th-sub">여성(35)</th>
+          <th class="th-sub">아동(35)</th>
+          <th class="th-sub">지역(35)</th>
+          <th class="th-sub">정신(35)</th>
+          <th class="th-sub">관리(35)</th>
+          <th class="th-sub">기본(30)</th>
+          <th class="th-sub">법규(20)</th>
+        </tr>
+
+        <tr>
+          <th class="th-sub">평락(60%)</th>
+          <td>42</td><td>21</td><td>21</td><td>21</td><td>21</td>
+          <td>21</td><td>18</td><td>12</td>
+          <td>177</td><td>😄</td>
+        </tr>
+
+        <tr>
+          <th class="th-sub">과락(40%)</th>
+          <td>28</td><td>14</td><td>14</td><td>14</td><td>14</td>
+          <td>14</td><td>12</td><td>8</td>
+          <td>118</td><td>😱</td>
+        </tr>
+      </thead>
+
+      <tbody>
+        <!-- 1회차 -->
+        <tr>
+          <td class="row-header">1</td>
+          <td><input type="number" min="0" max="70" class="score-input" data-row="1" data-subject="adult" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="1" data-subject="woman" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="1" data-subject="child" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="1" data-subject="local" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="1" data-subject="mental" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="1" data-subject="manage" /></td>
+          <td><input type="number" min="0" max="30" class="score-input" data-row="1" data-subject="basic" /></td>
+          <td><input type="number" min="0" max="20" class="score-input" data-row="1" data-subject="law" /></td>
+          <td class="total-cell" data-role="total" data-row="1"></td>
+          <td data-role="result" data-row="1"></td>
+        </tr>
+
+        <!-- 2회차 -->
+        <tr>
+          <td class="row-header">2</td>
+          <td><input type="number" min="0" max="70" class="score-input" data-row="2" data-subject="adult" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="2" data-subject="woman" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="2" data-subject="child" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="2" data-subject="local" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="2" data-subject="mental" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="2" data-subject="manage" /></td>
+          <td><input type="number" min="0" max="30" class="score-input" data-row="2" data-subject="basic" /></td>
+          <td><input type="number" min="0" max="20" class="score-input" data-row="2" data-subject="law" /></td>
+          <td class="total-cell" data-role="total" data-row="2"></td>
+          <td data-role="result" data-row="2"></td>
+        </tr>
+
+        <!-- 3회차 -->
+        <tr>
+          <td class="row-header">3</td>
+          <td><input type="number" min="0" max="70" class="score-input" data-row="3" data-subject="adult" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="3" data-subject="woman" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="3" data-subject="child" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="3" data-subject="local" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="3" data-subject="mental" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="3" data-subject="manage" /></td>
+          <td><input type="number" min="0" max="30" class="score-input" data-row="3" data-subject="basic" /></td>
+          <td><input type="number" min="0" max="20" class="score-input" data-row="3" data-subject="law" /></td>
+          <td class="total-cell" data-role="total" data-row="3"></td>
+          <td data-role="result" data-row="3"></td>
+        </tr>
+
+        <!-- 4회차 -->
+        <tr>
+          <td class="row-header">4</td>
+          <td><input type="number" min="0" max="70" class="score-input" data-row="4" data-subject="adult" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="4" data-subject="woman" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="4" data-subject="child" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="4" data-subject="local" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="4" data-subject="mental" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="4" data-subject="manage" /></td>
+          <td><input type="number" min="0" max="30" class="score-input" data-row="4" data-subject="basic" /></td>
+          <td><input type="number" min="0" max="20" class="score-input" data-row="4" data-subject="law" /></td>
+          <td class="total-cell" data-role="total" data-row="4"></td>
+          <td data-role="result" data-row="4"></td>
+        </tr>
+
+        <!-- 5회차 -->
+        <tr>
+          <td class="row-header">5</td>
+          <td><input type="number" min="0" max="70" class="score-input" data-row="5" data-subject="adult" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="5" data-subject="woman" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="5" data-subject="child" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="5" data-subject="local" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="5" data-subject="mental" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="5" data-subject="manage" /></td>
+          <td><input type="number" min="0" max="30" class="score-input" data-row="5" data-subject="basic" /></td>
+          <td><input type="number" min="0" max="20" class="score-input" data-row="5" data-subject="law" /></td>
+          <td class="total-cell" data-role="total" data-row="5"></td>
+          <td data-role="result" data-row="5"></td>
+        </tr>
+
+        <!-- 6회차 -->
+        <tr>
+          <td class="row-header">6</td>
+          <td><input type="number" min="0" max="70" class="score-input" data-row="6" data-subject="adult" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="6" data-subject="woman" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="6" data-subject="child" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="6" data-subject="local" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="6" data-subject="mental" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="6" data-subject="manage" /></td>
+          <td><input type="number" min="0" max="30" class="score-input" data-row="6" data-subject="basic" /></td>
+          <td><input type="number" min="0" max="20" class="score-input" data-row="6" data-subject="law" /></td>
+          <td class="total-cell" data-role="total" data-row="6"></td>
+          <td data-role="result" data-row="6"></td>
+        </tr>
+
+        <!-- 7회차 -->
+        <tr>
+          <td class="row-header">7</td>
+          <td><input type="number" min="0" max="70" class="score-input" data-row="7" data-subject="adult" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="7" data-subject="woman" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="7" data-subject="child" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="7" data-subject="local" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="7" data-subject="mental" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="7" data-subject="manage" /></td>
+          <td><input type="number" min="0" max="30" class="score-input" data-row="7" data-subject="basic" /></td>
+          <td><input type="number" min="0" max="20" class="score-input" data-row="7" data-subject="law" /></td>
+          <td class="total-cell" data-role="total" data-row="7"></td>
+          <td data-role="result" data-row="7"></td>
+        </tr>
+
+        <!-- 8회차 -->
+        <tr>
+          <td class="row-header">8</td>
+          <td><input type="number" min="0" max="70" class="score-input" data-row="8" data-subject="adult" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="8" data-subject="woman" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="8" data-subject="child" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="8" data-subject="local" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="8" data-subject="mental" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="8" data-subject="manage" /></td>
+          <td><input type="number" min="0" max="30" class="score-input" data-row="8" data-subject="basic" /></td>
+          <td><input type="number" min="0" max="20" class="score-input" data-row="8" data-subject="law" /></td>
+          <td class="total-cell" data-role="total" data-row="8"></td>
+          <td data-role="result" data-row="8"></td>
+        </tr>
+
+        <!-- 9회차 -->
+        <tr>
+          <td class="row-header">9</td>
+          <td><input type="number" min="0" max="70" class="score-input" data-row="9" data-subject="adult" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="9" data-subject="woman" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="9" data-subject="child" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="9" data-subject="local" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="9" data-subject="mental" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="9" data-subject="manage" /></td>
+          <td><input type="number" min="0" max="30" class="score-input" data-row="9" data-subject="basic" /></td>
+          <td><input type="number" min="0" max="20" class="score-input" data-row="9" data-subject="law" /></td>
+          <td class="total-cell" data-role="total" data-row="9"></td>
+          <td data-role="result" data-row="9"></td>
+        </tr>
+
+        <!-- 10회차 -->
+        <tr>
+          <td class="row-header">10</td>
+          <td><input type="number" min="0" max="70" class="score-input" data-row="10" data-subject="adult" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="10" data-subject="woman" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="10" data-subject="child" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="10" data-subject="local" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="10" data-subject="mental" /></td>
+          <td><input type="number" min="0" max="35" class="score-input" data-row="10" data-subject="manage" /></td>
+          <td><input type="number" min="0" max="30" class="score-input" data-row="10" data-subject="basic" /></td>
+          <td><input type="number" min="0" max="20" class="score-input" data-row="10" data-subject="law" /></td>
+          <td class="total-cell" data-role="total" data-row="10"></td>
+          <td data-role="result" data-row="10"></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="chart-wrapper">
+    <canvas id="scoreChart"></canvas>
+  </div>
+  <div class="note" style="margin-top:16px; font-size:12px; color:#666; line-height:1.5;">
+    • 각 과목 점수를 입력하면 총점과 합격 / 불합격이 자동 계산됩니다.<br>
+    • 기준: 과락 과목별 40% (성인 28점, 여성·아동·지역·정신·관리 14점, 기본 12점, 법규 8점), 평락 총점 60% (177점).<br>
+    • 점수가 기준 미만이거나 비어있는 칸이 있으면 불합격으로 표시.<br>
+    • 사용 기기·브라우저에서만 기록 저장. (캐시 삭제 시 초기화)
+  </div>
+</div>
+
+<script>
+(function () {
+  const STORAGE_KEY = "mock_exam_scores_v1";
+  const subjects = [
+    { id: "adult", sixty: 42, forty: 28 },
+    { id: "woman", sixty: 21, forty: 14 },
+    { id: "child", sixty: 21, forty: 14 },
+    { id: "local", sixty: 21, forty: 14 },
+    { id: "mental", sixty: 21, forty: 14 },
+    { id: "manage", sixty: 21, forty: 14 },
+    { id: "basic", sixty: 18, forty: 12 },
+    { id: "law",   sixty: 12, forty: 8  }
+  ];
+  const TOTAL_PASS = 177;
+  const ROW_COUNT = 10;
+  let scoreData = {};
+
+  function loadData() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === "object") scoreData = parsed;
+      }
+    } catch (e) {
+      console.warn("load error", e);
+    }
+
+    for (let row = 1; row <= ROW_COUNT; row++) {
+      subjects.forEach(subj => {
+        const val =
+          scoreData[row] && typeof scoreData[row][subj.id] !== "undefined"
+            ? scoreData[row][subj.id]
+            : "";
+        const input = document.querySelector(
+          'input.score-input[data-row="' + row +
+          '"][data-subject="' + subj.id + '"]'
+        );
+        if (input) input.value = val === null ? "" : val;
+      });
+    }
+  }
+
+  function saveData() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(scoreData));
+    } catch (e) {
+      console.warn("save error", e);
+    }
+  }
+
+  function recalcRow(rowIndex) {
+    let total = 0;
+    let hasAny = false;
+    let filledCount = 0;
+    let hasFailSubject = false;
+
+    subjects.forEach(subj => {
+      const input = document.querySelector(
+        'input.score-input[data-row="' + rowIndex +
+        '"][data-subject="' + subj.id + '"]'
+      );
+      if (!input) return;
+      const cell = input.parentElement;
+      cell.classList.remove("level-high","level-mid","level-low");
+
+      const raw = (input.value || "").trim();
+      if (raw === "") return;
+
+      const value = Number(raw);
+      if (Number.isNaN(value)) return;
+
+      hasAny = true;
+      filledCount += 1;
+      total += value;
+
+      if (value >= subj.sixty)      cell.classList.add("level-high");
+      else if (value >= subj.forty) cell.classList.add("level-mid");
+      else {
+        cell.classList.add("level-low");
+        hasFailSubject = true;
+      }
+    });
+
+    const totalCell = document.querySelector(
+      'td[data-role="total"][data-row="' + rowIndex + '"]'
+    );
+    const resultCell = document.querySelector(
+      'td[data-role="result"][data-row="' + rowIndex + '"]'
+    );
+
+    totalCell.textContent = hasAny ? total : "";
+    resultCell.textContent = "";
+    resultCell.classList.remove("status-pass","status-fail");
+
+    if (!hasAny) return;
+
+    const allFilled = filledCount === subjects.length;
+
+    if (!allFilled || hasFailSubject || total < TOTAL_PASS) {
+      resultCell.textContent = "불합격";
+      resultCell.classList.add("status-fail");
+    } else {
+      resultCell.textContent = "합격";
+      resultCell.classList.add("status-pass");
+    }
+  }
+
+  function recalcAll() {
+    for (let i = 1; i <= ROW_COUNT; i++) recalcRow(i);
+  }
+
+  function getRowTotalFromData(rowIndex) {
+    const rowData = scoreData[rowIndex];
+    if (!rowData) return null;
+    let total = 0;
+    let hasAny = false;
+    subjects.forEach(subj => {
+      const v = rowData[subj.id];
+      if (v !== "" && v != null && !Number.isNaN(Number(v))) {
+        total += Number(v);
+        hasAny = true;
+      }
+    });
+    return hasAny ? total : null;
+  }
+
+  function drawChart() {
+    const canvas = document.getElementById("scoreChart");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+
+    const parentWidth = canvas.parentElement.clientWidth || 800;
+    const height = 260;
+
+    canvas.width = parentWidth * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = parentWidth + "px";
+    canvas.style.height = height + "px";
+
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, parentWidth, height);
+
+    const paddingLeft = 40;
+    const paddingRight = 16;
+    const paddingTop = 20;
+    const paddingBottom = 30;
+
+    const innerWidth = parentWidth - paddingLeft - paddingRight;
+    const innerHeight = height - paddingTop - paddingBottom;
+
+    const labels = [];
+    const totals = [];
+    for (let i = 1; i <= ROW_COUNT; i++) {
+      labels.push(i);
+      totals.push(getRowTotalFromData(i));
+    }
+
+    const yTicks = [0, 50, 100, 150, 200, 250, 300];
+    const maxY = 300;
+
+    // 축
+    ctx.strokeStyle = "#ccc";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(paddingLeft, paddingTop);
+    ctx.lineTo(paddingLeft, paddingTop + innerHeight);
+    ctx.lineTo(paddingLeft + innerWidth, paddingTop + innerHeight);
+    ctx.stroke();
+
+    // Y축 눈금
+    ctx.font = "11px -apple-system, system-ui, sans-serif";
+    ctx.fillStyle = "#777";
+    yTicks.forEach(v => {
+      const ratio = v / maxY;
+      const y = paddingTop + innerHeight - innerHeight * ratio;
+      ctx.strokeStyle = "#eee";
+      ctx.beginPath();
+      ctx.moveTo(paddingLeft, y);
+      ctx.lineTo(paddingLeft + innerWidth, y);
+      ctx.stroke();
+      ctx.fillStyle = "#777";
+      ctx.fillText(String(v), 5, y + 3);
+    });
+
+    // X축 (가운데 정렬)
+    const stepX = ROW_COUNT > 0 ? innerWidth / (ROW_COUNT + 1) : innerWidth;
+    for (let i = 0; i < ROW_COUNT; i++) {
+      const x = paddingLeft + stepX * (i + 1);
+      const label = String(labels[i]);
+      const tw = ctx.measureText(label).width;
+      ctx.fillText(label, x - tw / 2, paddingTop + innerHeight + 18);
+    }
+
+    // 합격 기준선
+    const passY = paddingTop + innerHeight - (TOTAL_PASS / maxY) * innerHeight;
+    ctx.strokeStyle = "#ffaaaa";
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(paddingLeft, passY);
+    ctx.lineTo(paddingLeft + innerWidth, passY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = "#d66";
+    ctx.fillText("합격 기준 177점", paddingLeft + 6, passY - 4);
+
+    // 라인
+    ctx.strokeStyle = "#4a7bd8";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    let started = false;
+    for (let i = 0; i < ROW_COUNT; i++) {
+      const v = totals[i];
+      if (v == null) continue;
+      const x = paddingLeft + stepX * (i + 1);
+      const y = paddingTop + innerHeight - (v / maxY) * innerHeight;
+      if (!started) {
+        ctx.moveTo(x, y);
+        started = true;
+      } else {
+        ctx.lineTo(x, y);
+      }
+    }
+    if (started) ctx.stroke();
+
+    // 점
+    ctx.font = "10px -apple-system, system-ui, sans-serif";
+    for (let i = 0; i < ROW_COUNT; i++) {
+      const v = totals[i];
+      if (v == null) continue;
+      const x = paddingLeft + stepX * (i + 1);
+      const y = paddingTop + innerHeight - (v / maxY) * innerHeight;
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.fillStyle = "#4a7bd8";
+      ctx.fill();
+      const t = String(v);
+      const tw = ctx.measureText(t).width;
+      ctx.fillStyle = "#333";
+      ctx.fillText(t, x - tw / 2, y - 6);
+    }
+  }
+
+  function handleInput(e) {
+    const input = e.target;
+    const row = input.dataset.row;
+    const subjId = input.dataset.subject;
+    if (!scoreData[row]) scoreData[row] = {};
+
+    const raw = (input.value || "").trim();
+    if (raw === "") scoreData[row][subjId] = "";
+    else {
+      const v = Number(raw);
+      scoreData[row][subjId] = Number.isNaN(v) ? "" : v;
+    }
+
+    saveData();
+    recalcRow(Number(row));
+    drawChart();
+  }
+
+  function resetAll() {
+    if (!confirm("저장된 점수를 지울까요?")) return;
+    scoreData = {};
+    saveData();
+    document
+      .querySelectorAll(".score-input")
+      .forEach(input => (input.value = ""));
+    recalcAll();
+    drawChart();
+  }
+
+  // 초기 실행
+  loadData();
+  recalcAll();
+  drawChart();
+
+  document
+    .querySelectorAll(".score-input")
+    .forEach(input => input.addEventListener("input", handleInput));
+
+const resetBtn = document.getElementById("resetAll");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", resetAll);
+  }
+
+  window.addEventListener("resize", drawChart);
+
+})();
+</script>
+</body>
+</html>
